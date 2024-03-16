@@ -1,6 +1,6 @@
 # PROD: индивидуальный этап
 
-С условием задания вы можете ознакомиться в [Notion](https://www.notion.so/centraluniversity/Backend-Travel-agent-3-0-f2d4cbabbaa94a338d3ad6293a9f0b4f).
+С условием задания вы можете ознакомиться в [Notion](https://centraluniversity.notion.site/PROD-a404fd65bd6044da83fdf60859ff7733).
 
 Вы можете самостоятельно выбирать стек и фреймворки, которые вы хотите использовать. Единственное ограничение &mdash; воздержитесь от изменения директории `.github` в корне репозитория.
 
