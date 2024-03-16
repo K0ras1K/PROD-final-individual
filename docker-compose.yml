@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:13.3
+    container_name: postgres
+    environment:
+      POSTGRES_DB: "travelagent"
+      POSTGRES_USER: "K0ras1K"
+      POSTGRES_PASSWORD: "Shah!9Sah@"
+    ports:
+      - "5432:5432"
+
+  travelagent:
+    build: .
+    container_name: travelagent
