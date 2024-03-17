@@ -10,6 +10,24 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - redis:/data
+
   travelagent:
     build: .
     container_name: travelagent
+    depends_on:
+      - redis
+      - postgres
+
+
+volumes:
+  redis:
+    driver: local

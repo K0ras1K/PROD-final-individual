@@ -2,52 +2,64 @@ package online.k0ras1k.travelagent
 
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.dispatcher.callbackQuery
 import com.github.kotlintelegrambot.dispatcher.command
+import com.github.kotlintelegrambot.dispatcher.message
+import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
-import com.github.kotlintelegrambot.logging.LogLevel
+import com.github.kotlintelegrambot.extensions.filters.Filter
 import io.github.cdimascio.dotenv.dotenv
-import online.k0ras1k.travelagent.data.models.UserData
+import kotlinx.coroutines.runBlocking
+import online.k0ras1k.travelagent.controller.HelpController
+import online.k0ras1k.travelagent.controller.TextController
+import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.database.DatabaseFactory
-import online.k0ras1k.travelagent.database.persistence.UserPersistence
+import online.k0ras1k.travelagent.database.redis.StatusMachine
 import org.jetbrains.exposed.sql.Database
-
+import org.w3c.dom.Text
 
 fun main() {
+    val db =
+        Database.connect(
+            DatabaseFactory.createHikariDataSource(
+                "jdbc:postgresql://postgres/travelagent",
+                "org.postgresql.Driver",
+                "K0ras1K",
+                "Shah!9Sah@",
+            ),
+        )
 
-    val db = Database.connect(
-        DatabaseFactory.createHikariDataSource(
-            "jdbc:postgresql://postgres/travelagent",
-            "org.postgresql.Driver",
-            "K0ras1K",
-            "Shah!9Sah@"
-        ),
-    )
+    val bot =
+        bot {
+            token = dotenv()["TELEGRAM_BOT_TOKEN"]
+//            logLevel = LogLevel.Network.Body
+
+            dispatch {
+                command("start") {
+                    HelpController(message, bot).handleHelp()
+                }
+
+                callbackQuery("extend-information") {
+                    runBlocking {
+                        val chatId = callbackQuery.message?.chat?.id ?: return@runBlocking
+                        val headMessage = callbackQuery.message?.messageId ?: return@runBlocking
+
+                        StatusMachine.setStatus(chatId, TextStatus.OLD_TYPE, headMessage)
+                        bot.editMessageText(
+                            chatId = ChatId.fromId(chatId),
+                            messageId = headMessage,
+                            text = "Введите свой возраст",
+                        )
+                    }
+                }
+
+                message(Filter.Text) {
+                    TextController(message, bot).handleMessages()
+                }
+            }
+        }
 
     Initialization.initialize()
 
-     val bot = bot {
-         token = dotenv()["TELEGRAM_BOT_TOKEN"]
-         logLevel = LogLevel.Network.Body
-
-
-         dispatch {
-             command("start") {
-                 UserPersistence(
-                     UserData(
-                         id = null,
-                         name = message.chat.firstName!!,
-                         tgLogin = message.chat.username!!,
-                         tgId = message.chat.id
-                     )
-                 ).insert()
-                 val result = bot.sendMessage(chatId = ChatId.fromId(message.chat.id), text = "Hi there!")
-                 result.fold({
-                     // do something here with the response
-                 },{
-                     // do something with the error
-                 })
-             }
-         }
-     }
     bot.startPolling()
 }
