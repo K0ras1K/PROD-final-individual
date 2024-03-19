@@ -1,0 +1,40 @@
+package online.k0ras1k.travelagent.controller.callback.adventure
+
+import com.github.kotlintelegrambot.Bot
+import com.github.kotlintelegrambot.entities.CallbackQuery
+import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.ParseMode
+import kotlinx.coroutines.runBlocking
+import online.k0ras1k.travelagent.data.models.AdventureData
+import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
+import online.k0ras1k.travelagent.utils.KeyboardUtils
+import online.k0ras1k.travelagent.utils.TimeUtils
+
+class FullAdventureHandler(private val callbackQuery: CallbackQuery, private val bot: Bot) {
+    fun handle() {
+        runBlocking {
+            val chatId = callbackQuery.message?.chat?.id ?: return@runBlocking
+            val headMessage = callbackQuery.message?.messageId ?: return@runBlocking
+            val adventureId: Int = callbackQuery.data.split("-")[2].toInt()
+
+            val adventureData: AdventureData = AdventurePersistence().select(adventureId)!!
+
+            bot.editMessageText(
+                chatId = ChatId.fromId(chatId),
+                messageId = headMessage,
+                text = generateAdventureText(adventureData),
+                parseMode = ParseMode.HTML,
+                replyMarkup = KeyboardUtils.generateFullAdventureButtons(adventureData),
+            )
+        }
+    }
+
+    private fun generateAdventureText(adventureData: AdventureData): String {
+        return """
+            <b>Путешествие</b> ${if (adventureData.name == "") "/черновик/" else adventureData.name}
+            <b>ID</b>: ${adventureData.id}
+            <b>Описание: ${adventureData.description}</b>
+            <b>Создано</b>: ${TimeUtils.toTimeString(adventureData.createdAt)}
+            """.trimIndent()
+    }
+}
