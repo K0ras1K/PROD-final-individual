@@ -5,6 +5,7 @@ val kotlin_redis_version: String by project
 plugins {
     kotlin("jvm") version "1.9.22"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.6.10"
 }
 
 group = "online.k0ras1k"
@@ -33,12 +34,32 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("com.zaxxer:HikariCP:$hikaricp_version")
     implementation("org.postgresql:postgresql:42.7.0")
+    // CLIENT
+    implementation("io.ktor:ktor-client-serialization:2.3.9")
+    implementation("io.ktor:ktor-client-core:2.3.9") // Основной клиент Ktor
+    implementation("io.ktor:ktor-client-cio:2.3.9") // Engine, можно выбрать другой
+    implementation("io.ktor:ktor-client-serialization:2.3.9") // Для сериализации
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.9")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.9")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.register("copyDependencies") {
+    doLast {
+        val libsDir = File("$buildDir/libs/libraries")
+        libsDir.mkdirs()
+
+        configurations.getByName("runtimeClasspath").files.forEach {
+            if (it.name.endsWith(".jar")) {
+                it.copyTo(File(libsDir, it.name))
+            }
+        }
+    }
 }
 
 tasks.withType<Jar> {

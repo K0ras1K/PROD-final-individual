@@ -1,4 +1,4 @@
-package online.k0ras1k.travelagent.controller.callback.adventure
+package online.k0ras1k.travelagent.controller.callback.adventure.city
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.CallbackQuery
@@ -6,6 +6,7 @@ import com.github.kotlintelegrambot.entities.ChatId
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
+import online.k0ras1k.travelagent.utils.KeyboardUtils
 import online.k0ras1k.travelagent.utils.TimeUtils
 
 class CitiesAdventureHandler(private val callbackQuery: CallbackQuery, private val bot: Bot) {
@@ -22,14 +23,17 @@ class CitiesAdventureHandler(private val callbackQuery: CallbackQuery, private v
                 chatId = ChatId.fromId(chatId),
                 messageId = headMessage,
                 text = generateText(cities),
+                replyMarkup = KeyboardUtils.generateCitiesButtons(cities, adventureId),
             )
         }
     }
 
     private fun generateText(cities: List<AdventureCityData>): String {
         var stringBuilder: String = "Города путешествия:\n"
+        var counter = 0
         for (city in cities) {
-            stringBuilder += "${city.id}. ${city.name}. Заезд: ${TimeUtils.toTimeString(
+            counter += 1
+            stringBuilder += "$counter. ${city.name}. Заезд: ${TimeUtils.toTimeString(
                 city.startTime,
             )}. Выезд: ${TimeUtils.toTimeString(city.endTime)}\n"
         }

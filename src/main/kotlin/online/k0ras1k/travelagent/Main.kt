@@ -12,19 +12,22 @@ import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.controller.HelpController
 import online.k0ras1k.travelagent.controller.TextController
 import online.k0ras1k.travelagent.controller.callback.BackHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.CreateAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.FullAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.ShowAviaTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureDescriptionHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureNameHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
 import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.StatusData
 import online.k0ras1k.travelagent.database.DatabaseFactory
 import online.k0ras1k.travelagent.database.redis.StatusMachine
 import org.jetbrains.exposed.sql.Database
 
-fun main() {
+suspend fun main() {
     val db =
         Database.connect(
             DatabaseFactory.createHikariDataSource(
@@ -70,6 +73,15 @@ fun main() {
                     }
                     if (data.startsWith("cities-adventure-")) {
                         CitiesAdventureHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-city-")) {
+                        AddCityHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("edit-city-")) {
+                        ShowCityHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("find-avia-")) {
+                        ShowAviaTicketHandler(callbackQuery, bot).handle()
                     }
                 }
 

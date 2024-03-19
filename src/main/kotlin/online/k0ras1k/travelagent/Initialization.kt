@@ -24,7 +24,10 @@ object Initialization {
             6379,
         )
 
-    fun initialize() {
+    suspend fun initialize() {
+//        println(AviaSalesAPI().getCityCode("Нижний")!!)
+//        println(AviaSalesAPI().getCityCode("Москва")!!)
+//        println(AviaSalesAPI().search(AviaSalesAPI().getCityCode("Нижний")!!, AviaSalesAPI().getCityCode("Москва")!!, "2024-03-30"))
         for (table in TABLES_LIST) {
             transaction {
                 SchemaUtils.create(table as Table)

@@ -14,7 +14,6 @@ object TimeUtils {
     fun toTimeString(time: Long): String {
         val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
         val date = java.util.Date(time)
-        date.hours += 3
         return sdf.format(date)
     }
 
@@ -22,5 +21,11 @@ object TimeUtils {
         val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
         val date = sdf.parse(timeString)
         return date?.time ?: -1
+    }
+
+    fun toTicketString(time: Long): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+        val date = java.util.Date(time)
+        return sdf.format(date)
     }
 }

@@ -26,7 +26,7 @@ class AdventureCityPersistence(val adventureId: Int) {
         return try {
             transaction {
                 AdventureCityTable.selectAll().where { AdventureCityTable.adventureId.eq(adventureId) }
-                    .orderBy(AdventureCityTable.startTime to SortOrder.DESC)
+                    .orderBy(AdventureCityTable.startTime to SortOrder.ASC)
                     .map {
                         AdventureCityData(
                             id = it[AdventureCityTable.id].value,
@@ -39,6 +39,25 @@ class AdventureCityPersistence(val adventureId: Int) {
             }
         } catch (exception: Exception) {
             listOf()
+        }
+    }
+
+    fun selectCity(cityId: Int): AdventureCityData? {
+        return try {
+            transaction {
+                AdventureCityTable.selectAll().where { AdventureCityTable.id.eq(cityId) }.single()
+                    .let {
+                        AdventureCityData(
+                            id = cityId,
+                            name = it[AdventureCityTable.name],
+                            startTime = it[AdventureCityTable.startTime],
+                            endTime = it[AdventureCityTable.endTime],
+                            adventureId = it[AdventureCityTable.adventureId],
+                        )
+                    }
+            }
+        } catch (exception: Exception) {
+            null
         }
     }
 

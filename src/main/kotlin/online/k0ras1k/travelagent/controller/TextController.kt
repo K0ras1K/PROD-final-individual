@@ -5,11 +5,14 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.enums.TextStatus
+import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.StatusData
+import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
 import online.k0ras1k.travelagent.database.redis.StatusMachine
-import online.k0ras1k.travelagent.utils.KeyboardUtils
+import online.k0ras1k.travelagent.templates.MainMessage
+import online.k0ras1k.travelagent.utils.TimeUtils
 
 class TextController(private val message: Message, private val bot: Bot) {
     fun handleMessages() {
@@ -67,12 +70,7 @@ class TextController(private val message: Message, private val bot: Bot) {
                     persistence.update(targetStatusData)
                 }
 
-                bot.editMessageText(
-                    chatId = ChatId.fromId(message.chat.id),
-                    messageId = headMessage,
-                    text = "Hi there!",
-                    replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
-                )
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
 
                 StatusMachine.removeStatus(message.chat.id)
@@ -94,12 +92,7 @@ class TextController(private val message: Message, private val bot: Bot) {
                     name = targetStatusData.data[1],
                 )
 
-                bot.editMessageText(
-                    chatId = ChatId.fromId(message.chat.id),
-                    messageId = headMessage,
-                    text = "Hi there!",
-                    replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
-                )
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
 
                 StatusMachine.removeStatus(message.chat.id)
@@ -121,12 +114,71 @@ class TextController(private val message: Message, private val bot: Bot) {
                     description = targetStatusData.data[1],
                 )
 
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+
+                StatusMachine.removeStatus(message.chat.id)
+            }
+
+            if (statusData.status == TextStatus.ADVENTURE_CITY_ADD) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.ADVENTURE_START_TIME_ADD,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text.toString()).toMutableList(),
+                    ),
+                )
                 bot.editMessageText(
                     chatId = ChatId.fromId(message.chat.id),
                     messageId = headMessage,
-                    text = "Hi there!",
-                    replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
+                    text = "Введите время прибытия (в формате dd.MM.yyyy HH:mm:ss)",
                 )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.ADVENTURE_START_TIME_ADD) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.ADVENTURE_END_TIME_ADD,
+                        headMessage = headMessage,
+                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Введите время выезда (в формате dd.MM.yyyy HH:mm:ss)",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.ADVENTURE_END_TIME_ADD) {
+                val headMessage = statusData.headMessage
+
+                val targetStatusData =
+                    StatusData(
+                        status = statusData.status,
+                        headMessage = statusData.headMessage,
+                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                    )
+
+                val persistence = AdventureCityPersistence(targetStatusData.data[0].toInt())
+
+                persistence.insertCity(
+                    AdventureCityData(
+                        id = 0,
+                        name = targetStatusData.data[1],
+                        startTime = targetStatusData.data[2].toLong(),
+                        endTime = targetStatusData.data[3].toLong(),
+                        adventureId = targetStatusData.data[0].toInt(),
+                    ),
+                )
+
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
 
                 StatusMachine.removeStatus(message.chat.id)

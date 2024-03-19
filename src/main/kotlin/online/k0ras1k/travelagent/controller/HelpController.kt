@@ -1,13 +1,12 @@
 package online.k0ras1k.travelagent.controller
 
 import com.github.kotlintelegrambot.Bot
-import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.UserData
 import online.k0ras1k.travelagent.database.persistence.UserPersistence
 import online.k0ras1k.travelagent.database.redis.StatusMachine
-import online.k0ras1k.travelagent.utils.KeyboardUtils
+import online.k0ras1k.travelagent.templates.MainMessage
 
 class HelpController(private val message: Message, private val bot: Bot) {
     fun handleHelp() {
@@ -32,11 +31,7 @@ class HelpController(private val message: Message, private val bot: Bot) {
             }
 
             StatusMachine.removeStatus(message.chat.id)
-            bot.sendMessage(
-                chatId = ChatId.fromId(message.chat.id),
-                text = "Hi there!",
-                replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
-            )
+            MainMessage(bot, message.chat.id, 0).sendHeadMessage()
         }
     }
 }

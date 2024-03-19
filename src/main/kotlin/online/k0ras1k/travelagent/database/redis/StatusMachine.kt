@@ -40,6 +40,7 @@ object StatusMachine {
     }
 
     fun removeStatus(userId: Long) {
+        Caching.status_cache.remove(userId)
         try {
             Initialization.redisPool.resource.del(
                 userId.toString(),

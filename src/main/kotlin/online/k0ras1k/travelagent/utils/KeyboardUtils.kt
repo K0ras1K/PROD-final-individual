@@ -2,6 +2,8 @@ package online.k0ras1k.travelagent.utils
 
 import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
+import online.k0ras1k.travelagent.api.aviasales.data.SearchResponse
+import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.AdventureData
 
 object KeyboardUtils {
@@ -15,14 +17,14 @@ object KeyboardUtils {
             ),
             listOf(
                 InlineKeyboardButton.CallbackData(
-                    text = "\uD83C\uDFDD\uFE0F Создать путешествие",
-                    callbackData = "create-adventure",
+                    text = "\uD83C\uDF0D Путешествия",
+                    callbackData = "show-adventures",
                 ),
             ),
             listOf(
                 InlineKeyboardButton.CallbackData(
-                    text = "\uD83C\uDF0D Мои путешествия",
-                    callbackData = "show-adventures",
+                    text = "⁉\uFE0F FAQ",
+                    callbackData = "show-faq",
                 ),
             ),
         )
@@ -31,6 +33,16 @@ object KeyboardUtils {
     fun generateAdventuresKeyboard(adventures: List<AdventureData>): InlineKeyboardMarkup {
         val onLineCount = 3
         val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = "\uD83C\uDFDD\uFE0F Создать путешествие",
+                        callbackData = "create-adventure",
+                    ),
+                ),
+            )
 
         var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
         var counter = 0
@@ -80,12 +92,100 @@ object KeyboardUtils {
             ),
             listOf(
                 InlineKeyboardButton.CallbackData(
-                    "\uD83C\uDFD9\uFE0F Добавить город",
-                    "add-adventure-city-${adventureData.id}",
+                    "\uD83D\uDE4B Пригласить друга",
+                    "add-friend-adventure-${adventureData.id}",
                 ),
             ),
             listOf(getBackButton()),
         )
+    }
+
+    fun generateCitiesButtons(
+        cities: List<AdventureCityData>,
+        adventureId: Int,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 5
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = "\uD83C\uDF06 Добавить город",
+                        callbackData = "add-city-$adventureId",
+                    ),
+                ),
+            )
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (city in cities) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    text = "$counter. ${city.name}",
+                    callbackData = "edit-city-${city.id}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
+    fun generateCityButton(cityData: AdventureCityData): InlineKeyboardMarkup {
+        return InlineKeyboardMarkup.create(
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "✈\uFE0F Авиабилеты",
+                    "find-avia-${cityData.id}",
+                ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83D\uDE82 ЖД Билеты",
+                    "find-zd-${cityData.id}",
+                ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83C\uDFE0 Отели",
+                    "find-hotels-${cityData.id}",
+                ),
+            ),
+            listOf(getBackButton()),
+        )
+    }
+
+    fun generateAviaButtons(tickets: SearchResponse): InlineKeyboardMarkup {
+        val onLineCount = 4
+        val buttons: MutableList<MutableList<InlineKeyboardButton>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton> = mutableListOf()
+        var counter = 0
+        for (ticket in tickets.prices) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    callbackData = ticket.depart_date,
+                    text = "$counter.",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        println(buttons)
+        return InlineKeyboardMarkup.create(buttons)
     }
 
     private fun getBackButton(): InlineKeyboardButton.CallbackData {
