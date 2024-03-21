@@ -32,16 +32,15 @@ import online.k0ras1k.travelagent.database.DatabaseFactory
 import online.k0ras1k.travelagent.database.redis.StatusMachine
 import org.jetbrains.exposed.sql.Database
 
-suspend fun main() {
-    val db =
-        Database.connect(
-            DatabaseFactory.createHikariDataSource(
-                "jdbc:postgresql://postgres/travelagent",
-                "org.postgresql.Driver",
-                "K0ras1K",
-                "Shah!9Sah@",
-            ),
-        )
+fun main() {
+    while (true) {
+        try {
+            connect()
+            break
+        } catch (exception: Exception) {
+            Logger.logger.error("Нет подключения в БД")
+        }
+    }
 
     val bot =
         bot {
@@ -132,4 +131,16 @@ suspend fun main() {
     Initialization.initialize()
 
     bot.startPolling()
+}
+
+fun connect() {
+    val db =
+        Database.connect(
+            DatabaseFactory.createHikariDataSource(
+                "jdbc:postgresql://postgres/travelagent",
+                "org.postgresql.Driver",
+                "K0ras1K",
+                "Shah!9Sah@",
+            ),
+        )
 }

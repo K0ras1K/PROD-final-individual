@@ -22,7 +22,7 @@ object Initialization {
             6379,
         )
 
-    suspend fun initialize() {
+    fun initialize() {
         for (table in TABLES_LIST) {
             transaction {
                 SchemaUtils.create(table as Table)

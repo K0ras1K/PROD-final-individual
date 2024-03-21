@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: "Shah!9Sah@"
     ports:
       - "5432:5432"
+    depends_on:
+      - redis
 
   redis:
     image: redis:alpine
@@ -24,7 +26,6 @@ services:
     build: .
     container_name: travelagent
     depends_on:
-      - redis
       - postgres
 
 

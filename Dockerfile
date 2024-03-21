@@ -19,7 +19,7 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
 COPY --from=build /workspace/app/build/libs/travelagent-1.0-SNAPSHOT.jar ./app.jar
-COPY --from=build /workspace/app/libraries ./libraries
+COPY --from=build /workspace/app/build/libs/libraries ./libraries
 COPY /.env ./.env
 
 CMD ["java", "-cp", "libraries/*:app.jar", "online.k0ras1k.travelagent.MainKt"]
