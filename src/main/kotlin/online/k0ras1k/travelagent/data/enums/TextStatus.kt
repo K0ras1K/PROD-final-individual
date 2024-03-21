@@ -11,4 +11,7 @@ enum class TextStatus {
     ADVENTURE_CITY_ADD,
     ADVENTURE_START_TIME_ADD,
     ADVENTURE_END_TIME_ADD,
+
+    NOTE_ADD_NAME,
+    NOTE_ADD_URL,
 }

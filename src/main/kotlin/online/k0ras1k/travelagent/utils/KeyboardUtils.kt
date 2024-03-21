@@ -98,7 +98,30 @@ object KeyboardUtils {
                     "add-friend-adventure-${adventureData.id}",
                 ),
             ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83D\uDCDD Добавить заметку",
+                    "add-note-${adventureData.id}",
+                ),
+            ),
             listOf(getBackButton()),
+        )
+    }
+
+    fun generateNoteButtons(adventureId: Int): InlineKeyboardMarkup {
+        return InlineKeyboardMarkup.create(
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83D\uDC6A Публичная",
+                    "add-final-note-PUBLIC-$adventureId",
+                ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83D\uDDDD\uFE0F Приватная",
+                    "add-final-note-PRIVATE-$adventureId",
+                ),
+            ),
         )
     }
 

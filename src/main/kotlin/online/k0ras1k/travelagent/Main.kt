@@ -26,6 +26,8 @@ import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.zd.
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureDescriptionHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureNameHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.notes.AddNoteHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.notes.AddNoteTypeHandler
 import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.StatusData
 import online.k0ras1k.travelagent.database.DatabaseFactory
@@ -98,6 +100,12 @@ fun main() {
                     }
                     if (data.startsWith("find-sight-")) {
                         ShowSightsHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-note-")) {
+                        AddNoteTypeHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-final-note-")) {
+                        AddNoteHandler(callbackQuery, bot).handle()
                     }
                 }
 

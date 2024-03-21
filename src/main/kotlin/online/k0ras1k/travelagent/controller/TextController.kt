@@ -4,6 +4,7 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import kotlinx.coroutines.runBlocking
+import online.k0ras1k.travelagent.Logger
 import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.StatusData
@@ -17,7 +18,9 @@ import online.k0ras1k.travelagent.utils.TimeUtils
 class TextController(private val message: Message, private val bot: Bot) {
     fun handleMessages() {
         runBlocking {
+            Logger.logger.info(message.toString())
             val statusData = StatusMachine.getStatus(message.chat.id) ?: return@runBlocking
+            Logger.logger.info(statusData.toString())
 
             if (statusData.status == TextStatus.OLD_TYPE) {
                 val headMessage = statusData.headMessage
@@ -157,6 +160,34 @@ class TextController(private val message: Message, private val bot: Bot) {
             }
 
             if (statusData.status == TextStatus.ADVENTURE_END_TIME_ADD) {
+                val headMessage = statusData.headMessage
+
+                val targetStatusData =
+                    StatusData(
+                        status = statusData.status,
+                        headMessage = statusData.headMessage,
+                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                    )
+
+                val persistence = AdventureCityPersistence(targetStatusData.data[0].toInt())
+
+                persistence.insertCity(
+                    AdventureCityData(
+                        id = 0,
+                        name = targetStatusData.data[1],
+                        startTime = targetStatusData.data[2].toLong(),
+                        endTime = targetStatusData.data[3].toLong(),
+                        adventureId = targetStatusData.data[0].toInt(),
+                    ),
+                )
+
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+
+                StatusMachine.removeStatus(message.chat.id)
+            }
+
+            if (statusData.status == TextStatus.NOTE_ADD_NAME) {
                 val headMessage = statusData.headMessage
 
                 val targetStatusData =
