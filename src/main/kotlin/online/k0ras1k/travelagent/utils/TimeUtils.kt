@@ -28,4 +28,10 @@ object TimeUtils {
         val date = java.util.Date(time)
         return sdf.format(date)
     }
+
+    fun toRzdTicketString(time: Long): String {
+        val sdf = SimpleDateFormat("dd.MM.yyy")
+        val date = java.util.Date(time)
+        return sdf.format(date)
+    }
 }

@@ -7,6 +7,7 @@ import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.dispatcher.message
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.extensions.filters.Filter
+import com.github.kotlintelegrambot.logging.LogLevel
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.controller.HelpController
@@ -17,7 +18,10 @@ import online.k0ras1k.travelagent.controller.callback.adventure.FullAdventureHan
 import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.ShowAviaTicketHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowAviaTicketHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowFullTicketHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.hotel.ShowHotelHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.zd.ShowZDTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureDescriptionHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureNameHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
@@ -41,7 +45,7 @@ suspend fun main() {
     val bot =
         bot {
             token = dotenv()["TELEGRAM_BOT_TOKEN"]
-//            logLevel = LogLevel.Network.Body
+            logLevel = LogLevel.Network.Body
 
             dispatch {
                 command("start") {
@@ -82,6 +86,15 @@ suspend fun main() {
                     }
                     if (data.startsWith("find-avia-")) {
                         ShowAviaTicketHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-ticket-")) {
+                        ShowFullTicketHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("find-zd-")) {
+                        ShowZDTicketHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("find-hotels-")) {
+                        ShowHotelHandler(callbackQuery, bot).handle()
                     }
                 }
 

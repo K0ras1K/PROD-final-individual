@@ -3,6 +3,8 @@ package online.k0ras1k.travelagent.utils
 import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import online.k0ras1k.travelagent.api.aviasales.data.SearchResponse
+import online.k0ras1k.travelagent.api.hotellook.data.Hotel
+import online.k0ras1k.travelagent.api.yandex.data.SegmentModel
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.AdventureData
 
@@ -162,18 +164,21 @@ object KeyboardUtils {
         )
     }
 
-    fun generateAviaButtons(tickets: SearchResponse): InlineKeyboardMarkup {
+    fun generateHotelButtons(
+        hotels: List<Hotel>,
+        cityId: Int,
+    ): InlineKeyboardMarkup {
         val onLineCount = 4
         val buttons: MutableList<MutableList<InlineKeyboardButton>> = mutableListOf()
 
         var tempRows: MutableList<InlineKeyboardButton> = mutableListOf()
         var counter = 0
-        for (ticket in tickets.prices) {
+        for (hotel in hotels) {
             counter += 1
             tempRows +=
                 InlineKeyboardButton.CallbackData(
-                    callbackData = ticket.depart_date,
-                    text = "$counter.",
+                    callbackData = "show-hotel-$cityId-$counter",
+                    text = "$counter. ${hotel.hotelName}",
                 )
             if (tempRows.size == onLineCount) {
                 buttons += tempRows
@@ -188,7 +193,65 @@ object KeyboardUtils {
         return InlineKeyboardMarkup.create(buttons)
     }
 
-    private fun getBackButton(): InlineKeyboardButton.CallbackData {
+    fun generateAviaButtons(
+        tickets: SearchResponse,
+        cityId: Int,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 4
+        val buttons: MutableList<MutableList<InlineKeyboardButton>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton> = mutableListOf()
+        var counter = 0
+        for (ticket in tickets.prices) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    callbackData = "show-ticket-$cityId-$counter",
+                    text = "$counter. ${ticket.price}₽",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        println(buttons)
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
+    fun generateZDButtons(
+        tickets: List<SegmentModel>,
+        cityId: Int,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 4
+        val buttons: MutableList<MutableList<InlineKeyboardButton>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton> = mutableListOf()
+        var counter = 0
+        for (ticket in tickets) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    callbackData = "show-zd-$cityId-$counter",
+                    text = "$counter. ${ticket.thread.title}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        println(buttons)
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
+    fun getBackButton(): InlineKeyboardButton.CallbackData {
         return InlineKeyboardButton.CallbackData("\uD83D\uDD19 Назад", "back")
     }
 }

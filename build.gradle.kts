@@ -41,6 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:2.3.9") // Для сериализации
     implementation("io.ktor:ktor-client-content-negotiation:2.3.9")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.9")
+    implementation("com.googlecode.json-simple:json-simple:1.1.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }

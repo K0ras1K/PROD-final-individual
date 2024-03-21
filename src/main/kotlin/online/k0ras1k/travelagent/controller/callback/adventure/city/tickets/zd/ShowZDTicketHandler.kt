@@ -1,17 +1,17 @@
-package online.k0ras1k.travelagent.controller.callback.adventure.city.tickets
+package online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.zd
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.CallbackQuery
 import com.github.kotlintelegrambot.entities.ChatId
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.Logger
-import online.k0ras1k.travelagent.api.aviasales.AviaSalesAPI
-import online.k0ras1k.travelagent.api.aviasales.data.SearchResponse
+import online.k0ras1k.travelagent.api.yandex.YandexAPI
+import online.k0ras1k.travelagent.api.yandex.data.SegmentModel
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
 import online.k0ras1k.travelagent.utils.TimeUtils
 
-class ShowAviaTicketHandler(private val callbackQuery: CallbackQuery, private val bot: Bot) {
+class ShowZDTicketHandler(private val callbackQuery: CallbackQuery, private val bot: Bot) {
     fun handle() {
         runBlocking {
             val chatId = callbackQuery.message?.chat?.id ?: return@runBlocking
@@ -25,31 +25,36 @@ class ShowAviaTicketHandler(private val callbackQuery: CallbackQuery, private va
 
             val headCity = cities[cities.indexOf(city) - 1]
 
-            val originCode = AviaSalesAPI().getCityCode(headCity.name)
-            val destinationCode = AviaSalesAPI().getCityCode(city.name)
-            val tickets = AviaSalesAPI().search(originCode!!, destinationCode!!, TimeUtils.toTicketString(city.startTime))
+            val originCode = YandexAPI().findStationCode(headCity.name)
+            println("found origin code - $originCode")
+            println("starting find dest code")
+            val destinationCode = YandexAPI().findStationCode(city.name)
+            println(originCode)
+            println(destinationCode)
+            val tickets = YandexAPI().getTickets(originCode, destinationCode, TimeUtils.toTicketString(city.startTime))
 
-            Logger.logger.info("before edit")
             bot.editMessageText(
                 chatId = ChatId.fromId(chatId),
                 messageId = headMessage,
                 text = generateText(tickets),
-                replyMarkup = KeyboardUtils.generateAviaButtons(tickets!!),
+                replyMarkup = KeyboardUtils.generateZDButtons(tickets, cityId),
             )
-            Logger.logger.info("after edit")
         }
     }
 
-    fun generateText(tickets: SearchResponse?): String {
+    fun generateText(tickets: List<SegmentModel>): String {
         if (tickets == null) {
             return "Билеты не найдены."
         }
         var stringBuilder = ""
         stringBuilder += "Найденные билеты: \n"
-        for (ticket in tickets.prices) {
-            stringBuilder += "Откуда: ${ticket.origin}. Куда: ${ticket.destination}. Вылет: ${ticket.depart_date}.\n"
-            stringBuilder += "Время полета: ${ticket.duration}. Цена: ${ticket.price}₽\n"
-            stringBuilder += "----\n"
+        for (segment in tickets) {
+            stringBuilder += "${segment.thread.title}.\n"
+            stringBuilder += "Из: ${segment.from.title}\n"
+            stringBuilder += "В: ${segment.to.title}\n"
+            stringBuilder += "Отправка: ${segment.departure}.\n"
+            stringBuilder += "Прибытие: ${segment.arrival}.\n"
+            stringBuilder += "-----------------------\n"
         }
         Logger.logger.info(stringBuilder)
         return stringBuilder
