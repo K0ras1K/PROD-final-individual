@@ -8,7 +8,9 @@ COPY gradle.properties .
 COPY settings.gradle.kts .
 COPY src src
 
-COPY build/libs/libraries libraries
+#COPY build/libs/libraries libraries
+
+RUN gradle copyDependencies -x test --no-daemon
 
 RUN gradle build -x test --no-daemon
 
