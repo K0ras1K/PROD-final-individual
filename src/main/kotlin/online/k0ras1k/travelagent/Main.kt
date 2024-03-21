@@ -18,6 +18,7 @@ import online.k0ras1k.travelagent.controller.callback.adventure.FullAdventureHan
 import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowAviaTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowFullTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.hotel.ShowHotelHandler
@@ -95,6 +96,9 @@ suspend fun main() {
                     }
                     if (data.startsWith("find-hotels-")) {
                         ShowHotelHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("find-sight-")) {
+                        ShowSightsHandler(callbackQuery, bot).handle()
                     }
                 }
 

@@ -1,9 +1,6 @@
 package online.k0ras1k.travelagent
 
-import online.k0ras1k.travelagent.database.schemas.AdventureCityTable
-import online.k0ras1k.travelagent.database.schemas.AdventureTable
-import online.k0ras1k.travelagent.database.schemas.ExtendedUserTable
-import online.k0ras1k.travelagent.database.schemas.UserTable
+import online.k0ras1k.travelagent.database.schemas.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -16,6 +13,7 @@ object Initialization {
             ExtendedUserTable,
             AdventureTable,
             AdventureCityTable,
+            NoteTable,
         )
 
     val redisPool =

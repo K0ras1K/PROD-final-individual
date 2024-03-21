@@ -160,6 +160,12 @@ object KeyboardUtils {
                     "find-hotels-${cityData.id}",
                 ),
             ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83D\uDDFD Достопримечательности",
+                    "find-sight-${cityData.id}",
+                ),
+            ),
             listOf(getBackButton()),
         )
     }

@@ -12,6 +12,7 @@ import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import online.k0ras1k.travelagent.api.yandex.data.AreaData
 import online.k0ras1k.travelagent.api.yandex.data.CityResponse
 import online.k0ras1k.travelagent.api.yandex.data.SegmentModel
 import org.json.simple.JSONArray
@@ -25,6 +26,49 @@ class YandexAPI {
     private val stationFindApiUrl = "https://api.rasp.yandex.net/v3.0/nearest_settlement/"
     private val ticketsFindApiUrl = "https://api.rasp.yandex.net/v3.0/search/"
     private val raspToken = dotenv()["YANDEX_RASP_TOKEN"]
+
+    fun findCityArea(city: String): AreaData {
+        return runBlocking {
+            val client =
+                HttpClient(CIO) {
+                    install(ContentNegotiation) {
+                        json(
+                            Json {
+                                prettyPrint = true
+                                isLenient = true
+                                ignoreUnknownKeys = true
+                            },
+                        )
+                    }
+                }
+
+            val cityResponse =
+                client.get(cityCoordinatesApiUrl) {
+                    url {
+                        parameters.append("apikey", mapsToken)
+                        parameters.append("geocode", city)
+                        parameters.append("lang", "ru_RU")
+                        parameters.append("format", "json")
+                    }
+                }.bodyAsText()
+            println(cityResponse)
+
+            val parser = JSONParser()
+            val json = parser.parse(cityResponse) as JSONObject
+            val response = json["response"] as JSONObject
+            val geoObjectLocation = response["GeoObjectCollection"] as JSONObject
+            val metaDataProperty = geoObjectLocation["metaDataProperty"] as JSONObject
+            val geocoderResponseMetaData = metaDataProperty["GeocoderResponseMetaData"] as JSONObject
+            val boundedBy = geocoderResponseMetaData["boundedBy"] as JSONObject
+            val envelope = boundedBy["Envelope"] as JSONObject
+            AreaData(
+                minLat = (envelope["lowerCorner"] as String).split(" ")[0],
+                minLon = (envelope["lowerCorner"] as String).split(" ")[1],
+                maxLat = (envelope["upperCorner"] as String).split(" ")[0],
+                maxLon = (envelope["upperCorner"] as String).split(" ")[1],
+            )
+        }
+    }
 
     fun findStationCode(city: String): String {
         return runBlocking {
@@ -40,7 +84,6 @@ class YandexAPI {
                         )
                     }
                 }
-            println("starting founding code for $city")
 
             val cityResponse =
                 client.get(cityCoordinatesApiUrl) {
