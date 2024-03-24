@@ -3,21 +3,20 @@ package online.k0ras1k.travelagent.database.persistence
 import online.k0ras1k.travelagent.data.enums.NoteStatus
 import online.k0ras1k.travelagent.data.models.NoteData
 import online.k0ras1k.travelagent.database.schemas.NoteTable
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 
-class NotePersistence(val tgId: Long, val adventureId: Int) {
+class NotePersistence() {
     fun insert(noteData: NoteData) {
         try {
             transaction {
                 NoteTable.insert {
-                    it[NoteTable.tgId] = tgId
-                    it[NoteTable.adventureId] = adventureId
+                    it[NoteTable.tgId] = noteData.tgId
+                    it[NoteTable.adventureId] = noteData.adventureId
                     it[NoteTable.noteUrl] = noteData.noteUrl
                     it[NoteTable.status] = noteData.status
+                    it[NoteTable.type] = noteData.type
+                    it[NoteTable.name] = noteData.name
                 }
             }
         } catch (exception: Exception) {
@@ -51,6 +50,8 @@ class NotePersistence(val tgId: Long, val adventureId: Int) {
                             adventureId = it[NoteTable.adventureId],
                             noteUrl = it[NoteTable.noteUrl],
                             status = it[NoteTable.status],
+                            type = it[NoteTable.type],
+                            name = it[NoteTable.name],
                         )
                     }
             }
@@ -60,7 +61,10 @@ class NotePersistence(val tgId: Long, val adventureId: Int) {
         }
     }
 
-    fun selectNotes(): List<NoteData> {
+    fun selectNotes(
+        tgId: Long,
+        adventureId: Int,
+    ): List<NoteData> {
         return try {
             transaction {
                 NoteTable.selectAll()
@@ -72,6 +76,8 @@ class NotePersistence(val tgId: Long, val adventureId: Int) {
                             adventureId = it[NoteTable.adventureId],
                             noteUrl = it[NoteTable.noteUrl],
                             status = it[NoteTable.status],
+                            type = it[NoteTable.type],
+                            name = it[NoteTable.name],
                         )
                     }
             }

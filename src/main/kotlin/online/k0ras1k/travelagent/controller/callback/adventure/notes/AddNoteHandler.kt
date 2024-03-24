@@ -20,7 +20,7 @@ class AddNoteHandler(private val callbackQuery: CallbackQuery, private val bot: 
             StatusData(
                 status = TextStatus.NOTE_ADD_NAME,
                 headMessage = headMessage,
-                data = mutableListOf(adventureId.toString()),
+                data = mutableListOf(adventureId.toString(), status.toString()),
             ),
         )
         bot.editMessageText(

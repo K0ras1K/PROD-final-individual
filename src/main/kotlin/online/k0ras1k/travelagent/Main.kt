@@ -6,6 +6,7 @@ import com.github.kotlintelegrambot.dispatcher.callbackQuery
 import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.dispatcher.message
 import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.extensions.filters.Filter
 import com.github.kotlintelegrambot.logging.LogLevel
 import io.github.cdimascio.dotenv.dotenv
@@ -19,6 +20,8 @@ import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHan
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.route.DeleteRouteHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.route.ShowRouteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowAviaTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowFullTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.hotel.ShowHotelHandler
@@ -28,10 +31,13 @@ import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventu
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.notes.AddNoteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.notes.AddNoteTypeHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.notes.NotesMenuHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.notes.ShowNoteHandler
 import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.StatusData
 import online.k0ras1k.travelagent.database.DatabaseFactory
 import online.k0ras1k.travelagent.database.redis.StatusMachine
+import online.k0ras1k.travelagent.utils.KeyboardUtils
 import org.jetbrains.exposed.sql.Database
 
 fun main() {
@@ -44,6 +50,8 @@ fun main() {
         }
     }
 
+    var id = ""
+
     val bot =
         bot {
             token = dotenv()["TELEGRAM_BOT_TOKEN"]
@@ -52,6 +60,19 @@ fun main() {
             dispatch {
                 command("start") {
                     HelpController(message, bot).handleHelp()
+                }
+
+                message(Filter.Photo) {
+                    println(message.photo!![0].fileId)
+                    id = message.photo!![0].fileId
+                }
+                command("file") {
+                    bot.sendPhoto(
+                        chatId = ChatId.fromId(message.chat.id),
+                        photo = TelegramFile.ByFileId(id),
+                        caption = "Ваше фото",
+                        replyMarkup = KeyboardUtils.generateRouteButton(),
+                    )
                 }
 
                 callbackQuery("create-adventure") {
@@ -64,6 +85,10 @@ fun main() {
 
                 callbackQuery("back") {
                     BackHandler(callbackQuery, bot).handle()
+                }
+
+                callbackQuery("delete-route") {
+                    DeleteRouteHandler(callbackQuery, bot).handle()
                 }
 
                 callbackQuery {
@@ -107,6 +132,15 @@ fun main() {
                     if (data.startsWith("add-final-note-")) {
                         AddNoteHandler(callbackQuery, bot).handle()
                     }
+                    if (data.startsWith("show-route-")) {
+                        ShowRouteHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("note-menu-")) {
+                        NotesMenuHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-note-")) {
+                        ShowNoteHandler(callbackQuery, bot).handle()
+                    }
                 }
 
                 callbackQuery("extend-information") {
@@ -132,6 +166,14 @@ fun main() {
 
                 message(Filter.Text) {
                     TextController(message, bot).handleMessages()
+                }
+
+                message(Filter.Photo) {
+                    TextController(message, bot).handlePhotos()
+                }
+
+                message(Filter.All) {
+                    TextController(message, bot).handleFiles()
                 }
             }
         }

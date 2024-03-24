@@ -84,13 +84,17 @@ class GeoapifyAPI {
                     }
                 }.bodyAsText()
 
-            val parser = JSONParser()
-            val json = parser.parse(respond) as JSONObject
-            val results = json["results"] as JSONArray
-            val result = results[0] as JSONObject
-            val geometry = ((result["geometry"] as JSONArray)[0] as JSONArray).toJSONString()
-            val dots = Json.decodeFromString<List<CoordinatesData>>(geometry)
-            dots
+            try {
+                val parser = JSONParser()
+                val json = parser.parse(respond) as JSONObject
+                val results = json["results"] as JSONArray
+                val result = results[0] as JSONObject
+                val geometry = ((result["geometry"] as JSONArray)[0] as JSONArray).toJSONString()
+                val newDots = Json.decodeFromString<List<CoordinatesData>>(geometry)
+                newDots
+            } catch (exception: Exception) {
+                dots
+            }
         }
     }
 
@@ -121,14 +125,14 @@ class GeoapifyAPI {
         return "https://maps.geoapify.com/v1/staticmap?style=klokantech-basic&width=1000&height=700&geometry=polyline:$request;linewidth:3;linecolor:%2322223b;linestyle:solid;lineopacity:1&apiKey=cd0e8c4ea13e4dd7bbb5ca6679b31006"
     }
 
-    fun getLinkDel(count: Int): Int {
+    private fun getLinkDel(count: Int): Int {
         if (count < 1000) {
             return 1
         }
         return count / (count / 100)
     }
 
-    fun getFile(url: String): UUID {
+    fun getFile(url: String): File {
         return runBlocking {
             val client =
                 HttpClient(CIO) {
@@ -148,16 +152,23 @@ class GeoapifyAPI {
             val file = File("temp/maps/$uuid.png")
             client.get(url).bodyAsChannel().copyAndClose(file.writeChannel())
             println("Finished downloading..")
-            uuid
+            file
         }
     }
 }
 
 fun main() {
-    val moscow = GeoapifyAPI().filterList(GeoapifyAPI().findByText("Нижний Новгород"))
-    val nn = GeoapifyAPI().filterList(GeoapifyAPI().findByText("Москва"))
-    val moscowCoords = CoordinatesData.getFromList(moscow[0].geometry.coordinates)
-    val nnCoords = CoordinatesData.getFromList(nn[0].geometry.coordinates)
-    val dots = GeoapifyAPI().getRoute(listOf(moscowCoords, nnCoords))
-    GeoapifyAPI().getFile(GeoapifyAPI().getMapLink(GeoapifyAPI().generateMapRequestString(dots)))
+    val api = GeoapifyAPI()
+    api.getFile(
+        api.getMapLink(
+            api.generateMapRequestString(
+                api.getRoute(
+                    listOf(
+                        CoordinatesData.getFromList(api.filterList(api.findByText("Москва"))[0].geometry.coordinates),
+                        CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
+                    ),
+                ),
+            ),
+        ),
+    )
 }

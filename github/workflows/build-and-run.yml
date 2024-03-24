@@ -1,0 +1,16 @@
+name: Build and run
+run-name: Run application via docker compose
+on: [push]
+jobs:
+  docker-compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJSON(vars.DEFAULT_JOB_TIMEOUT) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build docker images
+        run: docker compose build
+        shell: bash
+      - name: Run application via docker compose
+        run: docker compose up
+        shell: bash
+        continue-on-error: true

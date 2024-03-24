@@ -27,6 +27,8 @@ services:
     container_name: travelagent
     depends_on:
       - postgres
+    volumes:
+      - /temp:/temp
 
 
 volumes:

@@ -5,12 +5,16 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.Logger
+import online.k0ras1k.travelagent.data.enums.NoteMediaType
+import online.k0ras1k.travelagent.data.enums.NoteStatus
 import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.AdventureCityData
+import online.k0ras1k.travelagent.data.models.NoteData
 import online.k0ras1k.travelagent.data.models.StatusData
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
+import online.k0ras1k.travelagent.database.persistence.NotePersistence
 import online.k0ras1k.travelagent.database.redis.StatusMachine
 import online.k0ras1k.travelagent.templates.MainMessage
 import online.k0ras1k.travelagent.utils.TimeUtils
@@ -192,26 +196,99 @@ class TextController(private val message: Message, private val bot: Bot) {
 
                 val targetStatusData =
                     StatusData(
-                        status = statusData.status,
+                        status = TextStatus.NOTE_ADD_URL,
                         headMessage = statusData.headMessage,
-                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                        data = (statusData.data + message.text!!).toMutableList(),
                     )
 
-                val persistence = AdventureCityPersistence(targetStatusData.data[0].toInt())
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Отправьте изображение | файл | текст",
+                )
+                StatusMachine.setStatus(message.chat.id, targetStatusData)
+            }
 
-                persistence.insertCity(
-                    AdventureCityData(
+            if (statusData.status == TextStatus.NOTE_ADD_URL) {
+                val headMessage = statusData.headMessage
+
+                val notePersistence = NotePersistence()
+
+                notePersistence.insert(
+                    NoteData(
                         id = 0,
-                        name = targetStatusData.data[1],
-                        startTime = targetStatusData.data[2].toLong(),
-                        endTime = targetStatusData.data[3].toLong(),
-                        adventureId = targetStatusData.data[0].toInt(),
+                        tgId = message.chat.id,
+                        adventureId = statusData.data[0].toInt(),
+                        noteUrl = message.text!!,
+                        type = NoteMediaType.TEXT,
+                        status = NoteStatus.valueOf(statusData.data[1]),
+                        name = statusData.data[2],
                     ),
                 )
 
-                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                StatusMachine.removeStatus(message.chat.id)
+            }
+        }
+    }
 
+    fun handleFiles() {
+        runBlocking {
+            Logger.logger.info(message.toString())
+            val statusData = StatusMachine.getStatus(message.chat.id) ?: return@runBlocking
+            Logger.logger.info(statusData.toString())
+
+            if (statusData.status == TextStatus.NOTE_ADD_URL) {
+                val headMessage = statusData.headMessage
+
+                val notePersistence = NotePersistence()
+
+                notePersistence.insert(
+                    NoteData(
+                        id = 0,
+                        tgId = message.chat.id,
+                        adventureId = statusData.data[0].toInt(),
+                        noteUrl = message.document!!.fileId,
+                        type = NoteMediaType.FILE,
+                        status = NoteStatus.valueOf(statusData.data[1]),
+                        name = statusData.data[2],
+                    ),
+                )
+
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                StatusMachine.removeStatus(message.chat.id)
+            }
+        }
+    }
+
+    fun handlePhotos() {
+        runBlocking {
+            Logger.logger.info(message.toString())
+            val statusData = StatusMachine.getStatus(message.chat.id) ?: return@runBlocking
+            Logger.logger.info(statusData.toString())
+
+            if (statusData.status == TextStatus.NOTE_ADD_URL) {
+                val headMessage = statusData.headMessage
+
+                val notePersistence = NotePersistence()
+
+                notePersistence.insert(
+                    NoteData(
+                        id = 0,
+                        tgId = message.chat.id,
+                        adventureId = statusData.data[0].toInt(),
+                        noteUrl = message.photo!![0].fileId,
+                        type = NoteMediaType.PHOTO,
+                        status = NoteStatus.valueOf(statusData.data[1]),
+                        name = statusData.data[2],
+                    ),
+                )
+
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
                 StatusMachine.removeStatus(message.chat.id)
             }
         }
