@@ -14,6 +14,7 @@ object Initialization {
             AdventureTable,
             AdventureCityTable,
             NoteTable,
+            AdventureInvitesTable,
         )
 
     val redisPool =

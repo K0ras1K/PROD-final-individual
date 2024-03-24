@@ -5,6 +5,7 @@ import com.github.kotlintelegrambot.entities.CallbackQuery
 import com.github.kotlintelegrambot.entities.ChatId
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureData
+import online.k0ras1k.travelagent.database.persistence.AdventureInvitesPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
 
@@ -15,8 +16,9 @@ class ShowAdventureHandler(private val callbackQuery: CallbackQuery, private val
             val headMessage = callbackQuery.message?.messageId ?: return@runBlocking
 
             val persistence = AdventurePersistence()
+            val invitedAdventures = AdventureInvitesPersistence().selectByUser(chatId)
 
-            val adventures = persistence.selectAll(chatId)
+            var adventures = persistence.selectAll(chatId) + persistence.selectFromList(invitedAdventures)
 
             bot.editMessageText(
                 chatId = ChatId.fromId(chatId),

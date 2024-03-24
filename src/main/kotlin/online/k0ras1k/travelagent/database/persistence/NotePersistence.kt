@@ -68,7 +68,7 @@ class NotePersistence() {
         return try {
             transaction {
                 NoteTable.selectAll()
-                    .where { NoteTable.tgId.eq(tgId) and NoteTable.adventureId.eq(adventureId) }
+                    .where { NoteTable.adventureId.eq(adventureId) }
                     .map {
                         NoteData(
                             id = it[NoteTable.id].value,

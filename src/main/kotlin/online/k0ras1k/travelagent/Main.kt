@@ -16,6 +16,7 @@ import online.k0ras1k.travelagent.controller.TextController
 import online.k0ras1k.travelagent.controller.callback.BackHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.CreateAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.FullAdventureHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.InviteAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
@@ -140,6 +141,9 @@ fun main() {
                     }
                     if (data.startsWith("show-note-")) {
                         ShowNoteHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-friend-adventure-")) {
+                        InviteAdventureHandler(callbackQuery, bot).handle()
                     }
                 }
 

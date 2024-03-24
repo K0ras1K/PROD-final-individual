@@ -58,6 +58,28 @@ class AdventurePersistence {
         }
     }
 
+    fun selectFromList(adventures: List<Int>): List<AdventureData> {
+        return try {
+            transaction {
+                AdventureTable.selectAll()
+                    .where { AdventureTable.id.inList(adventures) }
+                    .orderBy(AdventureTable.createdAt to SortOrder.DESC)
+                    .map {
+                        AdventureData(
+                            id = it[AdventureTable.id].value,
+                            createdAt = it[AdventureTable.createdAt],
+                            name = it[AdventureTable.name],
+                            description = it[AdventureTable.description],
+                            createdBy = it[AdventureTable.createdBy],
+                        )
+                    }
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            listOf()
+        }
+    }
+
     fun updateName(
         id: Int,
         name: String,
