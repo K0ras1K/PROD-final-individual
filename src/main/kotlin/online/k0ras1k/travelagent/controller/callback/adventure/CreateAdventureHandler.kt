@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.AdventureData
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
+import online.k0ras1k.travelagent.database.persistence.AdventureInvitesPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
@@ -47,6 +48,18 @@ class CreateAdventureHandler(private val callbackQuery: CallbackQuery, private v
                     adventureId = allAdventures[0].id,
                 )
             AdventureCityPersistence(allAdventures[0].id).insertCity(firstCityData)
+
+            val persistence = AdventurePersistence()
+            val invitedAdventures = AdventureInvitesPersistence().selectByUser(chatId)
+
+            var adventures = persistence.selectAll(chatId) + persistence.selectFromList(invitedAdventures)
+
+            bot.editMessageText(
+                chatId = ChatId.fromId(chatId),
+                messageId = headMessage,
+                text = "Мои путешествия",
+                replyMarkup = KeyboardUtils.generateAdventuresKeyboard(adventures),
+            )
         }
     }
 }

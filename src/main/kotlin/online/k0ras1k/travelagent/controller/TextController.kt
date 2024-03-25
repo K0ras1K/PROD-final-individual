@@ -15,6 +15,7 @@ import online.k0ras1k.travelagent.data.models.TargetData
 import online.k0ras1k.travelagent.database.persistence.*
 import online.k0ras1k.travelagent.database.redis.StatusMachine
 import online.k0ras1k.travelagent.templates.MainMessage
+import online.k0ras1k.travelagent.utils.KeyboardUtils
 import online.k0ras1k.travelagent.utils.TimeUtils
 
 class TextController(private val message: Message, private val bot: Bot) {
@@ -331,6 +332,48 @@ class TextController(private val message: Message, private val bot: Bot) {
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
 
                 StatusMachine.removeStatus(message.chat.id)
+            }
+
+            // PAYMENTS
+            if (statusData.status == TextStatus.PAYMENT_ADD_NAME) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.PAYMENT_ADD_COUNT,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text!!.toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Укажите сумму траты в $",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+            if (statusData.status == TextStatus.PAYMENT_ADD_COUNT) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.PAYMENT_ADD_USERS,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text!!.toInt().toString()).toMutableList(),
+                    ),
+                )
+                val adventureId = AdventureCityPersistence(0).selectCity(statusData.data[0].toInt())!!.adventureId
+
+                var users =
+                    AdventureInvitesPersistence().selectByAdventure(adventureId)
+                users += AdventurePersistence().select(adventureId)!!.createdBy
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Добавьте пользователей к трате",
+                    replyMarkup = KeyboardUtils.generateUsersButton(users, message.chat.id),
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
             }
         }
     }

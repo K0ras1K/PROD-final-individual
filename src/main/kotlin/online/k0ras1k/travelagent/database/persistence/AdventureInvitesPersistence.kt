@@ -34,4 +34,19 @@ class AdventureInvitesPersistence {
             listOf()
         }
     }
+
+    fun selectByAdventure(adventureId: Int): List<Long> {
+        return try {
+            transaction {
+                AdventureInvitesTable.selectAll()
+                    .where { AdventureInvitesTable.adventureId.eq(adventureId) }
+                    .map {
+                        it[AdventureInvitesTable.invitedUser]
+                    }
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            listOf()
+        }
+    }
 }

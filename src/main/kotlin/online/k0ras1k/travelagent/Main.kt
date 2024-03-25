@@ -8,19 +8,16 @@ import com.github.kotlintelegrambot.dispatcher.message
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.extensions.filters.Filter
-import com.github.kotlintelegrambot.logging.LogLevel
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.*
 import online.k0ras1k.travelagent.controller.HelpController
 import online.k0ras1k.travelagent.controller.TextController
 import online.k0ras1k.travelagent.controller.callback.BackHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.CreateAdventureHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.FullAdventureHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.InviteAdventureHandler
-import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.*
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.payments.*
 import online.k0ras1k.travelagent.controller.callback.adventure.city.restaurants.ShowRestaurantsHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.DeleteRouteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.ShowRouteHandler
@@ -61,7 +58,7 @@ fun main() {
     val bot =
         bot {
             token = dotenv()["TELEGRAM_BOT_TOKEN"]
-            logLevel = LogLevel.Network.Body
+//            logLevel = LogLevel.Network.Body
 
             dispatch {
                 command("start") {
@@ -165,6 +162,24 @@ fun main() {
                     if (data.startsWith("show-target-")) {
                         ShowTargetHandler(callbackQuery, bot).handle()
                     }
+                    if (data.startsWith("show-payments-")) {
+                        ShowPaymentsMenuHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-payment-")) {
+                        AddPaymentsHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-users-")) {
+                        AddUserHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("finish-payment-")) {
+                        FinishUserPaymentHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show|payment|")) {
+                        ShowPaymentHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-pay-")) {
+                        ShowPayHandler(callbackQuery, bot).handle()
+                    }
                 }
 
                 callbackQuery("extend-information") {
@@ -206,14 +221,14 @@ fun main() {
 
     bot.startPolling()
 
-    GlobalScope.launch(Dispatchers.IO) {
-        while (true) {
-            delay(10000L)
-            bot.stopPolling()
-            delay(100L)
-            bot.startPolling()
-        }
-    }
+//    GlobalScope.launch(Dispatchers.IO) {
+//        while (true) {
+//            delay(30000L)
+//            bot.stopPolling()
+//            delay(100L)
+//            bot.startPolling()
+//        }
+//    }
 }
 
 fun connect() {

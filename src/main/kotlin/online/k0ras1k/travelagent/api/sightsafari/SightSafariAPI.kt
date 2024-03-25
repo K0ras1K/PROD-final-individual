@@ -18,7 +18,7 @@ import kotlin.math.min
 class SightSafariAPI {
     private val sightsApiUrl = "https://sightsafari.city/api/v1/geography/sights"
 
-    fun getSights(areaData: AreaData): SightsResponse {
+    fun getSights(areaData: AreaData): SightsResponse? {
         return runBlocking {
             val client =
                 HttpClient(CIO) {
@@ -44,14 +44,18 @@ class SightSafariAPI {
                     }
                 }
             println(response.bodyAsText())
-            response.body<SightsResponse>()
+            try {
+                response.body<SightsResponse>()
+            } catch (exception: Exception) {
+                null
+            }
         }
     }
 
     fun getTravels(areaData: AreaData): List<SightArea> {
         val sights = getSights(areaData)
         val tempSights =
-            sights.body.filter {
+            sights!!.body.filter {
                 it.type == SightAreaType.TOURISM || it.type == SightAreaType.CULTURAL_OBJECT || it.type == SightAreaType.MONUMENT
             }
         return tempSights.subList(0, min(5, tempSights.size))

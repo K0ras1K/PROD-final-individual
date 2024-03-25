@@ -5,10 +5,8 @@ import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import online.k0ras1k.travelagent.api.aviasales.data.SearchResponse
 import online.k0ras1k.travelagent.api.hotellook.data.Hotel
 import online.k0ras1k.travelagent.api.yandex.data.SegmentModel
-import online.k0ras1k.travelagent.data.models.AdventureCityData
-import online.k0ras1k.travelagent.data.models.AdventureData
-import online.k0ras1k.travelagent.data.models.NoteData
-import online.k0ras1k.travelagent.data.models.TargetData
+import online.k0ras1k.travelagent.data.models.*
+import online.k0ras1k.travelagent.database.persistence.UserPersistence
 
 object KeyboardUtils {
     fun generateMainInlineKeyboard(isAdded: Boolean): InlineKeyboardMarkup {
@@ -182,7 +180,7 @@ object KeyboardUtils {
                     ),
                     InlineKeyboardButton.CallbackData(
                         "\uD83D\uDE4B Друзья",
-                        "show-friend-adventure-${adventureData.id}",
+                        "add-friend-adventure-${adventureData.id}",
                     ),
                 ),
             )
@@ -258,6 +256,49 @@ object KeyboardUtils {
         )
     }
 
+    fun generateUsersButton(
+        users: List<Long>,
+        initiatorId: Long,
+    ): InlineKeyboardMarkup {
+        var usersLogins: MutableList<String> = mutableListOf()
+        for (user in users) {
+            val persistence = UserPersistence(UserData(0, "", "", user))
+            usersLogins += persistence.select()!!.tgLogin
+        }
+
+        val onLineCount = 2
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (user in usersLogins) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    text = user,
+                    callbackData = "add-users-$initiatorId-${users[counter - 1]}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = "Завершить",
+                        callbackData = "finish-payment-$initiatorId",
+                    ),
+                ),
+            )
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
     fun generateCitiesButtons(
         cities: List<AdventureCityData>,
         adventureId: Int,
@@ -292,6 +333,45 @@ object KeyboardUtils {
         if (tempRows.isNotEmpty()) {
             buttons += tempRows
         }
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
+    fun generatePaymentsButton(
+        payments: List<PaymentData>,
+        cityId: Int,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 3
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (payment in payments) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    text = "${payment.name}",
+                    callbackData = "show|payment|${payment.targetId}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        text = "\uD83D\uDCB7 Добавить трату",
+                        callbackData = "add-payment-$cityId",
+                    ),
+                ),
+            )
+
         buttons += mutableListOf(mutableListOf(getBackButton()))
         return InlineKeyboardMarkup.create(buttons)
     }
@@ -360,6 +440,12 @@ object KeyboardUtils {
 
         buttons +=
             mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDCB5 Расходы",
+                        "show-payments-${cityData.id}",
+                    ),
+                ),
                 mutableListOf(
                     InlineKeyboardButton.CallbackData(
                         "⬆\uFE0F Маршрут",
