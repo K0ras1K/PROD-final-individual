@@ -241,6 +241,18 @@ object KeyboardUtils {
             ),
             listOf(
                 InlineKeyboardButton.CallbackData(
+                    "☔ Прогноз погоды",
+                    "show-weather-${cityData.id}",
+                ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "\uD83C\uDF54 Рестораны",
+                    "show-restaurants-${cityData.id}",
+                ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
                     "\uD83D\uDDFD Достопримечательности",
                     "find-sight-${cityData.id}",
                 ),

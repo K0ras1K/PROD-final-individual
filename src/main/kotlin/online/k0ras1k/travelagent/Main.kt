@@ -21,12 +21,14 @@ import online.k0ras1k.travelagent.controller.callback.adventure.ShowAdventureHan
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.restaurants.ShowRestaurantsHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.DeleteRouteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.ShowRouteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowAviaTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowFullTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.hotel.ShowHotelHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.zd.ShowZDTicketHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.weather.ShowWeatherHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureDescriptionHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureNameHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
@@ -144,6 +146,12 @@ fun main() {
                     }
                     if (data.startsWith("add-friend-adventure-")) {
                         InviteAdventureHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-weather-")) {
+                        ShowWeatherHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-restaurants-")) {
+                        ShowRestaurantsHandler(callbackQuery, bot).handle()
                     }
                 }
 
