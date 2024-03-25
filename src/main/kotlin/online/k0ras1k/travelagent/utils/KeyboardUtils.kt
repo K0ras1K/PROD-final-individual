@@ -8,29 +8,56 @@ import online.k0ras1k.travelagent.api.yandex.data.SegmentModel
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.AdventureData
 import online.k0ras1k.travelagent.data.models.NoteData
+import online.k0ras1k.travelagent.data.models.TargetData
 
 object KeyboardUtils {
-    fun generateMainInlineKeyboard(): InlineKeyboardMarkup {
-        return InlineKeyboardMarkup.create(
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    text = "\uD83D\uDD87 Заполнить информацию о себе",
-                    callbackData = "extend-information",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    text = "\uD83C\uDF0D Путешествия",
-                    callbackData = "show-adventures",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    text = "⁉\uFE0F FAQ",
-                    callbackData = "show-faq",
-                ),
-            ),
-        )
+    fun generateMainInlineKeyboard(isAdded: Boolean): InlineKeyboardMarkup {
+        when (isAdded) {
+            true -> {
+                return InlineKeyboardMarkup.create(
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "\uD83C\uDF0D Путешествия",
+                            callbackData = "show-adventures",
+                        ),
+                    ),
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "Изменить информацию о себе",
+                            callbackData = "extend-information",
+                        ),
+                    ),
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "⁉\uFE0F FAQ",
+                            callbackData = "show-faq",
+                        ),
+                    ),
+                )
+            }
+            false -> {
+                return InlineKeyboardMarkup.create(
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "\uD83D\uDD87 Заполнить информацию о себе",
+                            callbackData = "extend-information",
+                        ),
+                    ),
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "\uD83C\uDF0D Путешествия",
+                            callbackData = "show-adventures",
+                        ),
+                    ),
+                    listOf(
+                        InlineKeyboardButton.CallbackData(
+                            text = "⁉\uFE0F FAQ",
+                            callbackData = "show-faq",
+                        ),
+                    ),
+                )
+            }
+        }
     }
 
     fun generateAdventuresKeyboard(adventures: List<AdventureData>): InlineKeyboardMarkup {
@@ -73,40 +100,107 @@ object KeyboardUtils {
         return InlineKeyboardMarkup.create(buttons)
     }
 
-    fun generateFullAdventureButtons(adventureData: AdventureData): InlineKeyboardMarkup {
-        return InlineKeyboardMarkup.create(
-            listOf(
+    fun generateTargetButtons(
+        cityId: Int,
+        targets: List<TargetData>,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 2
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (target in targets) {
+            counter += 1
+            tempRows +=
                 InlineKeyboardButton.CallbackData(
-                    "▶\uFE0F Города",
-                    "cities-adventure-${adventureData.id}",
+                    text = "${target.name}",
+                    callbackData = "show-target-${target.id}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83C\uDF06 Добавить цель",
+                        "add-target-$cityId",
+                    ),
                 ),
-            ),
-            listOf(
+            )
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        return InlineKeyboardMarkup.create(buttons)
+    }
+
+    fun generateFullAdventureButtons(
+        adventureData: AdventureData,
+        cities: List<AdventureCityData>,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 1
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (city in cities) {
+            counter += 1
+            tempRows +=
                 InlineKeyboardButton.CallbackData(
-                    "\uD83D\uDCCC Изменить название",
-                    "change-adventure-name-${adventureData.id}",
+                    text = "${city.name}",
+                    callbackData = "edit-city-${city.id}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83C\uDF06 Добавить город",
+                        "cities-adventure-${adventureData.id}",
+                    ),
                 ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "✏\uFE0F Изменить описание",
-                    "change-adventure-description-${adventureData.id}",
+            )
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83E\uDE99 Расходы",
+                        "show-pay-${adventureData.id}",
+                    ),
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDE4B Друзья",
+                        "show-friend-adventure-${adventureData.id}",
+                    ),
                 ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83D\uDCDD Заметки",
-                    "note-menu-${adventureData.id}",
+            )
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDCDD Заметки",
+                        "note-menu-${adventureData.id}",
+                    ),
+                    InlineKeyboardButton.CallbackData(
+                        "✏\uFE0F Редактирование",
+                        "change-full-adventure-${adventureData.id}",
+                    ),
                 ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83D\uDE4B Пригласить друга",
-                    "add-friend-adventure-${adventureData.id}",
-                ),
-            ),
-            listOf(getBackButton()),
-        )
+            )
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        return InlineKeyboardMarkup.create(buttons)
     }
 
     fun generateNotesManagerButtons(
@@ -213,52 +307,98 @@ object KeyboardUtils {
         )
     }
 
-    fun generateCityButton(cityData: AdventureCityData): InlineKeyboardMarkup {
+    fun generateEditAdventureButtons(adventureData: AdventureData): InlineKeyboardMarkup {
         return InlineKeyboardMarkup.create(
             listOf(
                 InlineKeyboardButton.CallbackData(
-                    "⬆\uFE0F Маршрут",
-                    "show-route-${cityData.id}",
+                    "\uD83D\uDCCC Изменить название",
+                    "change-adventure-name-${adventureData.id}",
                 ),
-            ),
-            listOf(
                 InlineKeyboardButton.CallbackData(
-                    "✈\uFE0F Авиабилеты",
-                    "find-avia-${cityData.id}",
+                    "✏\uFE0F Изменить описание",
+                    "change-adventure-description-${adventureData.id}",
                 ),
+                getBackButton(),
             ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83D\uDE82 ЖД Билеты",
-                    "find-zd-${cityData.id}",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83C\uDFE0 Отели",
-                    "find-hotels-${cityData.id}",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "☔ Прогноз погоды",
-                    "show-weather-${cityData.id}",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83C\uDF54 Рестораны",
-                    "show-restaurants-${cityData.id}",
-                ),
-            ),
-            listOf(
-                InlineKeyboardButton.CallbackData(
-                    "\uD83D\uDDFD Достопримечательности",
-                    "find-sight-${cityData.id}",
-                ),
-            ),
-            listOf(getBackButton()),
         )
+    }
+
+    fun generateCityButton(
+        cityData: AdventureCityData,
+        targets: List<TargetData>,
+    ): InlineKeyboardMarkup {
+        val onLineCount = 2
+        val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
+
+        var tempRows: MutableList<InlineKeyboardButton.CallbackData> = mutableListOf()
+        var counter = 0
+        for (target in targets) {
+            counter += 1
+            tempRows +=
+                InlineKeyboardButton.CallbackData(
+                    text = "${target.name}",
+                    callbackData = "show-target-${target.id}",
+                )
+            if (tempRows.size == onLineCount) {
+                buttons += tempRows
+                tempRows = mutableListOf()
+            }
+        }
+        if (tempRows.isNotEmpty()) {
+            buttons += tempRows
+        }
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83C\uDF06 Добавить цель",
+                        "add-target-${cityData.id}",
+                    ),
+                ),
+            )
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "⬆\uFE0F Маршрут",
+                        "show-route-${cityData.id}",
+                    ),
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83C\uDFE0 Отели",
+                        "find-hotels-${cityData.id}",
+                    ),
+                ),
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDE82 ЖД Билеты",
+                        "find-zd-${cityData.id}",
+                    ),
+                    InlineKeyboardButton.CallbackData(
+                        "✈\uFE0F Авиабилеты",
+                        "find-avia-${cityData.id}",
+                    ),
+                ),
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83C\uDF54 Рестораны",
+                        "show-restaurants-${cityData.id}",
+                    ),
+                    InlineKeyboardButton.CallbackData(
+                        "☔ Прогноз погоды",
+                        "show-weather-${cityData.id}",
+                    ),
+                ),
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDDFD Достопримечательности",
+                        "find-sight-${cityData.id}",
+                    ),
+                ),
+            )
+        buttons += mutableListOf(mutableListOf(getBackButton()))
+        return InlineKeyboardMarkup.create(buttons)
     }
 
     fun generateHotelButtons(

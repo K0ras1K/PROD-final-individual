@@ -6,6 +6,7 @@ import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.ParseMode
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureData
+import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
 import online.k0ras1k.travelagent.utils.TimeUtils
@@ -18,13 +19,14 @@ class FullAdventureHandler(private val callbackQuery: CallbackQuery, private val
             val adventureId: Int = callbackQuery.data.split("-")[2].toInt()
 
             val adventureData: AdventureData = AdventurePersistence().select(adventureId)!!
+            val cities = AdventureCityPersistence(adventureId).selectCities()
 
             bot.editMessageText(
                 chatId = ChatId.fromId(chatId),
                 messageId = headMessage,
                 text = generateAdventureText(adventureData),
                 parseMode = ParseMode.HTML,
-                replyMarkup = KeyboardUtils.generateFullAdventureButtons(adventureData),
+                replyMarkup = KeyboardUtils.generateFullAdventureButtons(adventureData, cities),
             )
         }
     }

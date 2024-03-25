@@ -11,10 +11,8 @@ import online.k0ras1k.travelagent.data.enums.TextStatus
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.NoteData
 import online.k0ras1k.travelagent.data.models.StatusData
-import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
-import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
-import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
-import online.k0ras1k.travelagent.database.persistence.NotePersistence
+import online.k0ras1k.travelagent.data.models.TargetData
+import online.k0ras1k.travelagent.database.persistence.*
 import online.k0ras1k.travelagent.database.redis.StatusMachine
 import online.k0ras1k.travelagent.templates.MainMessage
 import online.k0ras1k.travelagent.utils.TimeUtils
@@ -229,6 +227,109 @@ class TextController(private val message: Message, private val bot: Bot) {
 
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
                 MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                StatusMachine.removeStatus(message.chat.id)
+            }
+
+            // TARGET
+            if (statusData.status == TextStatus.TARGET_ADD_NAME) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.TARGET_ADD_DATE,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text.toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Укажите дату",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.TARGET_ADD_DATE) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.TARGET_ADD_TIME,
+                        headMessage = headMessage,
+                        data = (statusData.data + TimeUtils.toMillisOnlyDate(message.text!!).toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Укажите время",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.TARGET_ADD_TIME) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.TARGET_ADD_RECEIPT,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text!!.toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Укажите примерный чек в $",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.TARGET_ADD_RECEIPT) {
+                val headMessage = statusData.headMessage
+                StatusMachine.setStatus(
+                    message.chat.id,
+                    StatusData(
+                        status = TextStatus.TARGET_ADD_DESCRIPTION,
+                        headMessage = headMessage,
+                        data = (statusData.data + message.text!!.toString()).toMutableList(),
+                    ),
+                )
+                bot.editMessageText(
+                    chatId = ChatId.fromId(message.chat.id),
+                    messageId = headMessage,
+                    text = "Добавьте комментарий или прикрепите ссылку",
+                )
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+            }
+
+            if (statusData.status == TextStatus.TARGET_ADD_DESCRIPTION) {
+                val headMessage = statusData.headMessage
+                val persistence = TargetPersistence()
+
+                val targetStatusData =
+                    StatusData(
+                        status = statusData.status,
+                        headMessage = statusData.headMessage,
+                        data = (statusData.data + message.text.toString()).toMutableList(),
+                    )
+
+                persistence.insert(
+                    TargetData(
+                        name = targetStatusData.data[1],
+                        id = 0,
+                        cityId = targetStatusData.data[0].toInt(),
+                        createdAt = System.currentTimeMillis(),
+                        date = targetStatusData.data[2].toLong(),
+                        time = targetStatusData.data[3],
+                        receipt = targetStatusData.data[4].toInt(),
+                        description = targetStatusData.data[5],
+                    ),
+                )
+
+                MainMessage(bot, message.chat.id, headMessage).toHeadMessage()
+                bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
+
                 StatusMachine.removeStatus(message.chat.id)
             }
         }

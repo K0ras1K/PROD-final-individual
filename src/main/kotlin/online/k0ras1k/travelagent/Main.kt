@@ -10,7 +10,7 @@ import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.extensions.filters.Filter
 import com.github.kotlintelegrambot.logging.LogLevel
 import io.github.cdimascio.dotenv.dotenv
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import online.k0ras1k.travelagent.controller.HelpController
 import online.k0ras1k.travelagent.controller.TextController
 import online.k0ras1k.travelagent.controller.callback.BackHandler
@@ -24,11 +24,14 @@ import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsH
 import online.k0ras1k.travelagent.controller.callback.adventure.city.restaurants.ShowRestaurantsHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.DeleteRouteHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.route.ShowRouteHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.target.AddTargetHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.target.ShowTargetHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowAviaTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.avia.ShowFullTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.hotel.ShowHotelHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.tickets.zd.ShowZDTicketHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.weather.ShowWeatherHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.edit.ChangeAdventureHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureDescriptionHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.EditAdventureNameHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.edit.city.AddCityHandler
@@ -153,6 +156,15 @@ fun main() {
                     if (data.startsWith("show-restaurants-")) {
                         ShowRestaurantsHandler(callbackQuery, bot).handle()
                     }
+                    if (data.startsWith("change-full-adventure-")) {
+                        ChangeAdventureHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("add-target-")) {
+                        AddTargetHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-target-")) {
+                        ShowTargetHandler(callbackQuery, bot).handle()
+                    }
                 }
 
                 callbackQuery("extend-information") {
@@ -193,6 +205,15 @@ fun main() {
     Initialization.initialize()
 
     bot.startPolling()
+
+    GlobalScope.launch(Dispatchers.IO) {
+        while (true) {
+            delay(10000L)
+            bot.stopPolling()
+            delay(100L)
+            bot.startPolling()
+        }
+    }
 }
 
 fun connect() {

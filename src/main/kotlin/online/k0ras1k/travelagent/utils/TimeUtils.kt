@@ -23,6 +23,18 @@ object TimeUtils {
         return date?.time ?: -1
     }
 
+    fun toTargetTime(time: Long): String {
+        val sdf = SimpleDateFormat("dd.MM.yyyy")
+        val date = java.util.Date(time)
+        return sdf.format(date)
+    }
+
+    fun toMillisOnlyDate(timeString: String): Long {
+        val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+        val date = sdf.parse("$timeString 20:00:00")
+        return date?.time ?: -1
+    }
+
     fun toTicketString(time: Long): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd")
         val date = java.util.Date(time)

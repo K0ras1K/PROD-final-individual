@@ -32,6 +32,8 @@ enum class SightAreaType {
     ADVERTISING,
     CULTURAL_OBJECT,
     MONUMENT,
+    HISTORICAL_OBJECT,
+    RELIGIOUS_OBJECT,
 }
 
 enum class GeometryType {

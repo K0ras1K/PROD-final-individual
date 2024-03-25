@@ -6,6 +6,7 @@ import com.github.kotlintelegrambot.entities.ChatId
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
+import online.k0ras1k.travelagent.database.persistence.TargetPersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
 import online.k0ras1k.travelagent.utils.TimeUtils
 
@@ -19,11 +20,13 @@ class ShowCityHandler(private val callbackQuery: CallbackQuery, private val bot:
             val persistence = AdventureCityPersistence(0)
             val city = persistence.selectCity(cityId)!!
 
+            val targets = TargetPersistence().selectAll(cityId)
+
             bot.editMessageText(
                 chatId = ChatId.fromId(chatId),
                 messageId = headMessage,
                 text = generateText(city),
-                replyMarkup = KeyboardUtils.generateCityButton(city),
+                replyMarkup = KeyboardUtils.generateCityButton(city, targets),
             )
         }
     }

@@ -2,18 +2,30 @@ package online.k0ras1k.travelagent.controller.callback.adventure
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.CallbackQuery
+import com.github.kotlintelegrambot.entities.ChatId
 import kotlinx.coroutines.runBlocking
 import online.k0ras1k.travelagent.data.models.AdventureCityData
 import online.k0ras1k.travelagent.data.models.AdventureData
 import online.k0ras1k.travelagent.database.persistence.AdventureCityPersistence
 import online.k0ras1k.travelagent.database.persistence.AdventurePersistence
 import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
+import online.k0ras1k.travelagent.utils.KeyboardUtils
 
 class CreateAdventureHandler(private val callbackQuery: CallbackQuery, private val bot: Bot) {
     fun handle() {
         runBlocking {
             val chatId = callbackQuery.message?.chat?.id ?: return@runBlocking
             val headMessage = callbackQuery.message?.messageId ?: return@runBlocking
+
+            val extendedUserPersistence = ExtendedUserPersistence(chatId)
+            if (extendedUserPersistence.select() == null) {
+                bot.sendMessage(
+                    chatId = ChatId.fromId(chatId),
+                    text = "Вы не можете создавать путешествия, не заполнив информацию о себе",
+                    replyMarkup = KeyboardUtils.generateRouteButton(),
+                )
+                return@runBlocking
+            }
 
             val adventureData =
                 AdventureData(

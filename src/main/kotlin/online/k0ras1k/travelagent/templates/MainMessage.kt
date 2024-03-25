@@ -2,10 +2,13 @@ package online.k0ras1k.travelagent.templates
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.ChatId
+import online.k0ras1k.travelagent.database.persistence.ExtendedUserPersistence
 import online.k0ras1k.travelagent.utils.KeyboardUtils
 
 class MainMessage(val bot: Bot, val chatId: Long, val messageId: Long) {
     fun toHeadMessage() {
+        val flag = ExtendedUserPersistence(chatId).select() != null
+
         bot.editMessageText(
             chatId = ChatId.fromId(chatId),
             messageId = messageId,
@@ -19,11 +22,12 @@ class MainMessage(val bot: Bot, val chatId: Long, val messageId: Long) {
 
                 Просто начните общение с ботом, и мы возьмем на себя все остальное. Путешествуйте с удовольствием! 🚀🌟
                 """.trimIndent(),
-            replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
+            replyMarkup = KeyboardUtils.generateMainInlineKeyboard(flag),
         )
     }
 
     fun sendHeadMessage() {
+        val flag = ExtendedUserPersistence(chatId).select() != null
         bot.sendMessage(
             chatId = ChatId.fromId(chatId),
             text =
@@ -36,7 +40,7 @@ class MainMessage(val bot: Bot, val chatId: Long, val messageId: Long) {
 
                 Просто начните общение с ботом, и мы возьмем на себя все остальное. Путешествуйте с удовольствием! 🚀🌟
                 """.trimIndent(),
-            replyMarkup = KeyboardUtils.generateMainInlineKeyboard(),
+            replyMarkup = KeyboardUtils.generateMainInlineKeyboard(flag),
         )
     }
 }
