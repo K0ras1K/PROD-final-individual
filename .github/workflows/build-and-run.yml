@@ -11,6 +11,24 @@ jobs:
         run: docker compose build
         shell: bash
       - name: Run application via docker compose
-        run: docker compose up
+        run: |
+          docker compose up &
+          COMPOSE_PID=$!
+          sleep 180
+          if kill -0 $COMPOSE_PID 2>/dev/null; then
+            echo "Application has been running for 3 minutes, stopping now"
+            docker compose down
+            echo "::set-output name=app_running::false"
+            exit 1
+          fi
         shell: bash
         continue-on-error: true
+      - name: Validate application run
+        if: steps.run-application.outcome == 'failure'
+        run: |
+          app_running=$(echo "${{ steps.run-application.outputs.app_running }}" | tr '[:upper:]' '[:lower:]')
+          if [ "$app_running" == "false" ]; then
+            echo "Application was running for more than 3 minutes"
+            exit 1
+          fi
+        shell: bash
