@@ -31,9 +31,7 @@ class FullAdventureHandler(private val callbackQuery: CallbackQuery, private val
 
     private fun generateAdventureText(adventureData: AdventureData): String {
         return """
-            <b>Путешествие</b> ${if (adventureData.name == "") "/черновик/" else adventureData.name}
-            <b>ID</b>: ${adventureData.id}
-            <b>Описание: ${adventureData.description}</b>
+            ${if (adventureData.name == "") "/черновик/" else adventureData.name}
             <b>Создано</b>: ${TimeUtils.toTimeString(adventureData.createdAt)}
             """.trimIndent()
     }
