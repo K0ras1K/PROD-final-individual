@@ -182,36 +182,3 @@ class GeoapifyAPI {
         }
     }
 }
-
-fun main() {
-    val api = GeoapifyAPI()
-    val routeUuid =
-        api.getFile(
-            api.getMapLink(
-                api.generateMapRequestString(
-                    api.getRoute(
-                        listOf(
-                            CoordinatesData.getFromList(api.filterList(api.findByText("Нижний Новгород"))[0].geometry.coordinates),
-                            CoordinatesData.getFromList(api.filterList(api.findByText("Огниково"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Уфа"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Кемерово"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Минск"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Кёльн"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Сидней"))[0].geometry.coordinates),
-                        ),
-                    ),
-                ),
-                listOf(
-                    CoordinatesData.getFromList(api.filterList(api.findByText("Нижний Новгород"))[0].geometry.coordinates),
-                    CoordinatesData.getFromList(api.filterList(api.findByText("Огниково"))[0].geometry.coordinates),
-//                    CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
-//                    CoordinatesData.getFromList(api.filterList(api.findByText("Уфа"))[0].geometry.coordinates),
-//                    CoordinatesData.getFromList(api.filterList(api.findByText("Кемерово"))[0].geometry.coordinates),
-//                    CoordinatesData.getFromList(api.filterList(api.findByText("Минск"))[0].geometry.coordinates),
-//                    CoordinatesData.getFromList(api.filterList(api.findByText("Кёльн"))[0].geometry.coordinates),
-//                            CoordinatesData.getFromList(api.filterList(api.findByText("Сидней"))[0].geometry.coordinates),
-                ),
-            ),
-        )
-}

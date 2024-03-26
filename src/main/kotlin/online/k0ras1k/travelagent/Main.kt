@@ -15,6 +15,7 @@ import online.k0ras1k.travelagent.controller.TextController
 import online.k0ras1k.travelagent.controller.callback.BackHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.*
 import online.k0ras1k.travelagent.controller.callback.adventure.city.CitiesAdventureHandler
+import online.k0ras1k.travelagent.controller.callback.adventure.city.DeleteCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowCityHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.ShowSightsHandler
 import online.k0ras1k.travelagent.controller.callback.adventure.city.payments.*
@@ -185,6 +186,9 @@ fun main() {
                     }
                     if (data.startsWith("show-full-route-")) {
                         ShowFullRouteHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("delete-city-")) {
+                        DeleteCityHandler(callbackQuery, bot).handle()
                     }
                 }
 

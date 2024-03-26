@@ -499,6 +499,10 @@ object KeyboardUtils {
                         "\uD83D\uDDFD Достопримечательности",
                         "find-sight-${cityData.id}",
                     ),
+                    InlineKeyboardButton.CallbackData(
+                        "❌ Удалить город",
+                        "delete-city-${cityData.id}",
+                    ),
                 ),
             )
         buttons += mutableListOf(mutableListOf(getBackButton()))
