@@ -38,6 +38,10 @@ class ShowRouteHandler(private val callbackQuery: CallbackQuery, private val bot
                                 ),
                             ),
                         ),
+                        listOf(
+                            CoordinatesData.getFromList(api.filterList(api.findByText(headCity.name))[0].geometry.coordinates),
+                            CoordinatesData.getFromList(api.filterList(api.findByText(city.name))[0].geometry.coordinates),
+                        ),
                     ),
                 )
 

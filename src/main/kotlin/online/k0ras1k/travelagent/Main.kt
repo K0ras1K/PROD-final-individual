@@ -180,6 +180,12 @@ fun main() {
                     if (data.startsWith("show-pay-")) {
                         ShowPayHandler(callbackQuery, bot).handle()
                     }
+                    if (data.startsWith("delete-adventure-")) {
+                        DeleteAdventureHandler(callbackQuery, bot).handle()
+                    }
+                    if (data.startsWith("show-full-route-")) {
+                        ShowFullRouteHandler(callbackQuery, bot).handle()
+                    }
                 }
 
                 callbackQuery("extend-information") {

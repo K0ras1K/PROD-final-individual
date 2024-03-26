@@ -21,11 +21,13 @@ import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 import java.io.File
 import java.util.UUID
+import kotlin.math.ceil
 
 class GeoapifyAPI {
     private val token = dotenv()["GEOAPIFY_TOKEN"]
     private val geocodingApiUrl = "https://api.geoapify.com/v1/geocode/search"
-    private val routeApiIrl = "https://api.geoapify.com/v1/routing"
+    private val routeApiIrl = "https://graphhopper.com/api/1/route"
+    private val routeApiKey = "8c2a246f-17db-4b02-8e90-8d47ee256f97"
 
     fun findByText(text: String): GeocodingModel {
         return runBlocking {
@@ -75,23 +77,28 @@ class GeoapifyAPI {
                 }
 
             val respond =
-                client.get(routeApiIrl) {
-                    url {
-                        parameters.append("waypoints", generateRequestString(dots))
-                        parameters.append("mode", "drive")
-                        parameters.append("format", "json")
-                        parameters.append("apiKey", token)
-                    }
+                client.get(
+                    "$routeApiIrl?${generateRequestString(
+                        dots,
+                    )}&profile=car&points_encoded=false&locale=en&calc_points=true&key=$routeApiKey",
+                ) {
                 }.bodyAsText()
 
             try {
                 val parser = JSONParser()
                 val json = parser.parse(respond) as JSONObject
-                val results = json["results"] as JSONArray
-                val result = results[0] as JSONObject
-                val geometry = ((result["geometry"] as JSONArray)[0] as JSONArray).toJSONString()
-                val newDots = Json.decodeFromString<List<CoordinatesData>>(geometry)
-                newDots
+                val paths = json["paths"] as JSONArray
+                val points = (paths[0] as JSONObject)["points"] as JSONObject
+                val coordinates = points["coordinates"] as JSONArray
+
+                var tempList: List<CoordinatesData> = listOf()
+
+                for (coordinate in coordinates) {
+                    tempList += CoordinatesData((coordinate as JSONArray)[1] as Double, (coordinate as JSONArray)[0] as Double)
+                }
+
+                println(tempList)
+                tempList
             } catch (exception: Exception) {
                 dots
             }
@@ -101,7 +108,7 @@ class GeoapifyAPI {
     private fun generateRequestString(dots: List<CoordinatesData>): String {
         var stringBuilder: String = ""
         for (dot in dots) {
-            stringBuilder += "${dot.lon},${dot.lat}|"
+            stringBuilder += "point=${dot.lon},${dot.lat}&"
         }
         stringBuilder = stringBuilder.substring(0, stringBuilder.length - 2)
         return stringBuilder
@@ -120,16 +127,35 @@ class GeoapifyAPI {
         return stringBuilder
     }
 
-    fun getMapLink(request: String): String {
+    fun generateMarkers(dots: List<CoordinatesData>): String {
+        var stringBuilder: String = ""
+        var counter = 0
+        for (dot in dots) {
+            counter++
+            @Suppress("ktlint:standard:max-line-length")
+            if (counter % getLinkDel(dots.size) == 0) {
+                stringBuilder += "lonlat:${dot.lat},${dot.lon};type:material;color:%23222222;size:x-large;icon:cloud;icontype:awesome;text:$counter;whitecircle:no|"
+            }
+        }
+        stringBuilder = stringBuilder.substring(0, stringBuilder.length - 1)
+        return stringBuilder
+    }
+
+    fun getMapLink(
+        request: String,
+        dots: List<CoordinatesData>,
+    ): String {
         @Suppress("ktlint:standard:max-line-length")
-        return "https://maps.geoapify.com/v1/staticmap?style=klokantech-basic&width=1000&height=700&geometry=polyline:$request;linewidth:3;linecolor:%2322223b;linestyle:solid;lineopacity:1&apiKey=cd0e8c4ea13e4dd7bbb5ca6679b31006"
+        return "https://maps.geoapify.com/v1/staticmap?style=klokantech-basic&width=1000&height=700&geometry=polyline:$request;linewidth:3;linecolor:%2322223b;linestyle:solid;lineopacity:1&apiKey=cd0e8c4ea13e4dd7bbb5ca6679b31006&marker=${generateMarkers(
+            dots,
+        )}"
     }
 
     private fun getLinkDel(count: Int): Int {
-        if (count < 1000) {
+        if (count < 60) {
             return 1
         }
-        return count / (count / 100)
+        return ceil((count / 60.0)).toInt()
     }
 
     fun getFile(url: String): File {
@@ -159,16 +185,33 @@ class GeoapifyAPI {
 
 fun main() {
     val api = GeoapifyAPI()
-    api.getFile(
-        api.getMapLink(
-            api.generateMapRequestString(
-                api.getRoute(
-                    listOf(
-                        CoordinatesData.getFromList(api.filterList(api.findByText("Москва"))[0].geometry.coordinates),
-                        CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
+    val routeUuid =
+        api.getFile(
+            api.getMapLink(
+                api.generateMapRequestString(
+                    api.getRoute(
+                        listOf(
+                            CoordinatesData.getFromList(api.filterList(api.findByText("Нижний Новгород"))[0].geometry.coordinates),
+                            CoordinatesData.getFromList(api.filterList(api.findByText("Огниково"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Уфа"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Кемерово"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Минск"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Кёльн"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Сидней"))[0].geometry.coordinates),
+                        ),
                     ),
                 ),
+                listOf(
+                    CoordinatesData.getFromList(api.filterList(api.findByText("Нижний Новгород"))[0].geometry.coordinates),
+                    CoordinatesData.getFromList(api.filterList(api.findByText("Огниково"))[0].geometry.coordinates),
+//                    CoordinatesData.getFromList(api.filterList(api.findByText("Владивосток"))[0].geometry.coordinates),
+//                    CoordinatesData.getFromList(api.filterList(api.findByText("Уфа"))[0].geometry.coordinates),
+//                    CoordinatesData.getFromList(api.filterList(api.findByText("Кемерово"))[0].geometry.coordinates),
+//                    CoordinatesData.getFromList(api.filterList(api.findByText("Минск"))[0].geometry.coordinates),
+//                    CoordinatesData.getFromList(api.filterList(api.findByText("Кёльн"))[0].geometry.coordinates),
+//                            CoordinatesData.getFromList(api.filterList(api.findByText("Сидней"))[0].geometry.coordinates),
+                ),
             ),
-        ),
-    )
+        )
 }

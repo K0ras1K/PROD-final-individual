@@ -91,6 +91,6 @@ data class Query(
 
 @Serializable
 data class Parsed(
-    val city: String,
+    val city: String? = "",
     val expected_type: String,
 )

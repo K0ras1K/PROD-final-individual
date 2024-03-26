@@ -166,7 +166,17 @@ object KeyboardUtils {
                 mutableListOf(
                     InlineKeyboardButton.CallbackData(
                         "\uD83C\uDF06 Добавить город",
-                        "cities-adventure-${adventureData.id}",
+                        "add-city-${adventureData.id}",
+                    ),
+                ),
+            )
+
+        buttons +=
+            mutableListOf(
+                mutableListOf(
+                    InlineKeyboardButton.CallbackData(
+                        "\uD83D\uDCA0 Показать маршрут",
+                        "show-full-route-${adventureData.id}",
                     ),
                 ),
             )
@@ -205,7 +215,7 @@ object KeyboardUtils {
         adventureId: Int,
         notes: List<NoteData>,
     ): InlineKeyboardMarkup {
-        val onLineCount = 4
+        val onLineCount = 2
         val buttons: MutableList<MutableList<InlineKeyboardButton.CallbackData>> = mutableListOf()
 
         buttons +=
@@ -380,7 +390,7 @@ object KeyboardUtils {
         return InlineKeyboardMarkup.create(
             listOf(
                 InlineKeyboardButton.CallbackData(
-                    "❌ Удалить",
+                    "❌ Удалить из чата",
                     "delete-route",
                 ),
             ),
@@ -398,6 +408,14 @@ object KeyboardUtils {
                     "✏\uFE0F Изменить описание",
                     "change-adventure-description-${adventureData.id}",
                 ),
+            ),
+            listOf(
+                InlineKeyboardButton.CallbackData(
+                    "❌ Удалить путешествие",
+                    "delete-adventure-${adventureData.id}",
+                ),
+            ),
+            listOf(
                 getBackButton(),
             ),
         )

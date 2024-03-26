@@ -2,11 +2,9 @@ package online.k0ras1k.travelagent.database.persistence
 
 import online.k0ras1k.travelagent.data.models.AdventureData
 import online.k0ras1k.travelagent.database.schemas.AdventureTable
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 
 class AdventurePersistence {
     fun insert(adventureData: AdventureData) {
@@ -104,6 +102,16 @@ class AdventurePersistence {
                 AdventureTable.update({ AdventureTable.id.eq(id) }) {
                     it[AdventureTable.description] = description
                 }
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+        }
+    }
+
+    fun delete(id: Int) {
+        try {
+            transaction {
+                AdventureTable.deleteWhere { AdventureTable.id.eq(id) }
             }
         } catch (exception: Exception) {
             exception.printStackTrace()

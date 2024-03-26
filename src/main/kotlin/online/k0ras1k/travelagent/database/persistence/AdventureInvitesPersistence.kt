@@ -2,6 +2,8 @@ package online.k0ras1k.travelagent.database.persistence
 
 import online.k0ras1k.travelagent.data.models.AdventureInviteData
 import online.k0ras1k.travelagent.database.schemas.AdventureInvitesTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -47,6 +49,16 @@ class AdventureInvitesPersistence {
         } catch (exception: Exception) {
             exception.printStackTrace()
             listOf()
+        }
+    }
+
+    fun deleteById(adventureId: Int) {
+        try {
+            transaction {
+                AdventureInvitesTable.deleteWhere { AdventureInvitesTable.adventureId.eq(adventureId) }
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
         }
     }
 }

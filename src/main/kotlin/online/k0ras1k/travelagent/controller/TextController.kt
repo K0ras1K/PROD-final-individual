@@ -139,7 +139,7 @@ class TextController(private val message: Message, private val bot: Bot) {
                 bot.editMessageText(
                     chatId = ChatId.fromId(message.chat.id),
                     messageId = headMessage,
-                    text = "Введите время прибытия (в формате dd.MM.yyyy HH:mm:ss)",
+                    text = "Введите время прибытия (в формате dd.MM.yyyy)",
                 )
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
             }
@@ -151,13 +151,13 @@ class TextController(private val message: Message, private val bot: Bot) {
                     StatusData(
                         status = TextStatus.ADVENTURE_END_TIME_ADD,
                         headMessage = headMessage,
-                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                        data = (statusData.data + TimeUtils.toMillisOnlyDate(message.text!!).toString()).toMutableList(),
                     ),
                 )
                 bot.editMessageText(
                     chatId = ChatId.fromId(message.chat.id),
                     messageId = headMessage,
-                    text = "Введите время выезда (в формате dd.MM.yyyy HH:mm:ss)",
+                    text = "Введите время выезда (в формате dd.MM.yyyy)",
                 )
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
             }
@@ -169,7 +169,7 @@ class TextController(private val message: Message, private val bot: Bot) {
                     StatusData(
                         status = statusData.status,
                         headMessage = statusData.headMessage,
-                        data = (statusData.data + TimeUtils.toMillis(message.text!!).toString()).toMutableList(),
+                        data = (statusData.data + TimeUtils.toMillisOnlyDate(message.text!!).toString()).toMutableList(),
                     )
 
                 val persistence = AdventureCityPersistence(targetStatusData.data[0].toInt())
@@ -245,7 +245,7 @@ class TextController(private val message: Message, private val bot: Bot) {
                 bot.editMessageText(
                     chatId = ChatId.fromId(message.chat.id),
                     messageId = headMessage,
-                    text = "Укажите дату",
+                    text = "Укажите дату (в формате dd.MM.yyyy)",
                 )
                 bot.deleteMessage(chatId = ChatId.fromId(message.chat.id), message.messageId)
             }
